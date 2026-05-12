@@ -1,7 +1,10 @@
 from django.urls import path
-from .views import RegistroPymeView
+from .views import UsuarioListCreateView, UsuarioDetailView
 
 urlpatterns = [
-    # URL final: http://localhost:PORT/api/usuario/registro/
-    path('registro/', RegistroPymeView.as_view(), name='registro-pyme'),
+    # Si entran a /api/usuario/
+    path('', UsuarioListCreateView.as_view(), name='usuario-list'),
+    
+    # Si entran a /api/usuario/76123456-K/
+    path('<str:rut>/', UsuarioDetailView.as_view(), name='usuario-detail'),
 ]

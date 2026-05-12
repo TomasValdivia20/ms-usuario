@@ -5,9 +5,6 @@ from .models import UsuarioPyme
 class UsuarioPymeSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioPyme
-        fields = [
-            'id', 'rut_empresa', 'razon_social', 'nombre_empresa', 
-            'email', 'telefono', 'direccion', 'codigo_sii', 'activo'
-        ]
-        # La contraseña nunca se envía de vuelta en un GET por seguridad
+        fields = '__all__' # llama todos los campos del modelo
+        # Ocultamos la contraseña al hacer GET por seguridad
         extra_kwargs = {'password': {'write_only': True}}

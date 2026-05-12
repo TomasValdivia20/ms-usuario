@@ -1,19 +1,40 @@
-#Logica de negocios
 from django.contrib.auth.hashers import make_password
 from .repositories import UsuarioRepository
 
 class UsuarioService:
     @staticmethod
-    def registrar_pyme(datos: dict):
-        # 1. Validar si el RUT ya existe
-        rut = datos.get('rut_empresa')
-        if UsuarioRepository.obtener_por_rut(rut):
-            raise ValueError(f"La empresa con RUT {rut} ya está registrada.")
+    def crear_usuario(datos: dict):
+        if UsuarioRepository.obtener_por_rut(datos.get('rut_empresa')):
+            raise ValueError("Ya existe una empresa con este RUT.")
         
-        #SEGURIDAD: HASHEO DE CONTRASEÑA 
-        raw_password = datos.get('password')
-        if raw_password:
-            datos['password'] = make_password(raw_password)
+        # Encriptamos la clave
+        if 'password' in datos:
+            datos['password'] = make_password(datos['password'])
             
-        # 3. Guardar a través del repositorio
-        return UsuarioRepository.crear_usuario(datos)
+        return UsuarioRepository.crear(datos)
+
+    @staticmethod
+    def obtener_usuario(rut: str):
+        usuario = UsuarioRepository.obtener_por_rut(rut)
+        if not usuario:
+            raise ValueError("Usuario no encontrado.")
+        return usuario
+
+    @staticmethod
+    def listar_usuarios():
+        return UsuarioRepository.listar_activos()
+
+    @staticmethod
+    def actualizar_usuario(rut: str, datos: dict):
+        usuario = UsuarioService.obtener_usuario(rut)
+        
+        # Protegemos campos que NO se deben cambiar por actualización
+        datos.pop('rut_empresa', None)
+        datos.pop('password', None) 
+        
+        return UsuarioRepository.actualizar(usuario, datos)
+
+    @staticmethod
+    def eliminar_usuario(rut: str):
+        usuario = UsuarioService.obtener_usuario(rut)
+        UsuarioRepository.eliminar(usuario)

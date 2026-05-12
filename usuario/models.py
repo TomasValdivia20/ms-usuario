@@ -2,6 +2,12 @@ from django.db import models
 import re
 from .validators import validar_rut_chileno
 
+class RolUsuario(models.TextChoices):
+    ADMIN = 'Admin', 'Administrador'
+    PYME = 'Pyme', 'Empresa Cliente'
+    BODEGUERO = 'Bodeguero', 'Bodeguero'
+
+
 class UsuarioPyme(models.Model):
     # Identificadores únicos
     rut_empresa = models.CharField(max_length=12, unique=True, validators=[validar_rut_chileno], verbose_name="RUT de la Empresa")
@@ -19,6 +25,8 @@ class UsuarioPyme(models.Model):
     # Seguridad (Se guarda el hash enviado por ms-login o texto plano según tu flujo)
     password = models.CharField(max_length=128)
     
+    # Roles y permisos
+    rol = models.CharField(max_length=20, choices=RolUsuario.choices, default=RolUsuario.PYME)
     # Auditoría
     fecha_registro = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
