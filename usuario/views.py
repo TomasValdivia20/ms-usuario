@@ -48,3 +48,21 @@ class UsuarioDetailView(APIView):
             return Response({"mensaje": "Usuario desactivado correctamente."})
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+class ValidarCredencialesView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        try:
+            # Aquí llamamos a la función que me acabas de mostrar en tu services.py
+            usuario = UsuarioService.validar_credenciales(email, password)
+            
+            # Si es exitoso, devolvemos los datos básicos (sin la contraseña)
+            return Response({
+                "rut_empresa": usuario.rut_empresa,
+                "email": usuario.email,
+                "rol": usuario.rol,
+                "nombre": usuario.nombre_empresa
+            }, status=status.HTTP_200_OK)
+        except ValueError:
+            return Response({"error": "Correo o contraseña incorrectos"}, status=status.HTTP_401_UNAUTHORIZED)

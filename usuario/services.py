@@ -1,5 +1,6 @@
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from .repositories import UsuarioRepository
+from .models import UsuarioPyme
 
 class UsuarioService:
     @staticmethod
@@ -38,3 +39,16 @@ class UsuarioService:
     def eliminar_usuario(rut: str):
         usuario = UsuarioService.obtener_usuario(rut)
         UsuarioRepository.eliminar(usuario)
+    
+    @staticmethod
+    def validar_credenciales(email: str, password_plana: str):
+        # 1. Buscamos al usuario por correo
+        usuario = UsuarioPyme.objects.filter(email=email, activo=True).first()
+        if not usuario:
+            raise ValueError("Credenciales inválidas")
+        
+        # 2. check_password compara el texto plano con el hash guardado en SQLite
+        if not check_password(password_plana, usuario.password):
+            raise ValueError("Credenciales inválidas")
+            
+        return usuario
