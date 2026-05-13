@@ -1,14 +1,26 @@
 from django.contrib.auth.hashers import make_password, check_password
+from django.core.exceptions import ValidationError
 from .repositories import UsuarioRepository
 from .models import UsuarioPyme
+from .validators import validar_rut_chileno
 
 class UsuarioService:
     @staticmethod
     def crear_usuario(datos: dict):
-        if UsuarioRepository.obtener_por_rut(datos.get('rut_empresa')):
+        rut_entrante = datos.get('rut_empresa', '')
+
+        # 1. ¡NUEVO! Pasamos el RUT por el escáner chileno antes de hacer nada
+        try:
+            validar_rut_chileno(rut_entrante)
+        except ValidationError as e:
+            # Si el RUT es falso, lanzamos un ValueError para que la vista devuelva un Error 400 al Front
+            raise ValueError(e.messages[0])
+
+        # 2. Verificamos si ya existe en la base de datos
+        if UsuarioRepository.obtener_por_rut(rut_entrante):
             raise ValueError("Ya existe una empresa con este RUT.")
         
-        # Encriptamos la clave
+        # 3. Encriptamos la clave
         if 'password' in datos:
             datos['password'] = make_password(datos['password'])
             
